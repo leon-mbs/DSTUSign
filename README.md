@@ -2,8 +2,8 @@
 ## Библиотека  для  цифровой подписи документов (Украина)
 
 
-Большинство  кода  портировано с [https://github.com/dstucrypt/jkurwa](https://github.com/dstucrypt/jkurwa)   
-
+Большинство  кода  портировано с [https://github.com/dstucrypt/jkurwa](https://github.com/dstucrypt/jkurwa)     
+Бибkиотека  не  оспользует сторонние или легаси библиотеки поэтому  легко портируется  на core.net  
 
 Как  использовать
 
