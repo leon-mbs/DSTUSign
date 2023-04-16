@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("DSTUSign")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Библиотека  для  ЭЦП")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("https://github.com/leon-mbs/DSTUSign")]
 [assembly: AssemblyProduct("DSTUSign")]
 [assembly: AssemblyCopyright("Copyright ©  2023")]
 [assembly: AssemblyTrademark("")]

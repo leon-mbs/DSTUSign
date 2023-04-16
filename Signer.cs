@@ -117,10 +117,10 @@ namespace DSTUSign
             var attrset = Util.CopyArray(attrseq);
             attrset[0] = 49;
 
-       //     attrset = System.IO.File.ReadAllBytes("z:/derhash");
+       
 
             var attrhash =  Hash.hash(attrset);
-          //  attrhash = System.IO.File.ReadAllBytes("z:/hash");
+          
             var sign =  key.sign(attrhash);
             
 
@@ -285,8 +285,6 @@ namespace DSTUSign
             var attrder = asnWriter.Encode();
             attrder[0] = 49; //replace  to  set
 
-            // System.IO.File.WriteAllBytes("z:/attrd", attrder);
-            //attrder = System.IO.File.ReadAllBytes("z:/attrp");
 
             var hash = Hash.hash(attrder);
             si.ReadSequence();
