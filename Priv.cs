@@ -54,7 +54,7 @@ namespace DSTUSign
             var hv = new Field(hmsg,16, this.d.curve);
             
             var rand = this.d.curve.random();
-            rand.value = 1;
+            //rand.value = 1;
 
 
         var eG = this.d.curve.bp.mul(rand);
