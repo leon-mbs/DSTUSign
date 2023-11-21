@@ -54,7 +54,7 @@ namespace DSTUSign
             var hv = new Field(hmsg,16, this.d.curve);
             
             var rand = this.d.curve.random();
-            //rand.value = 1;
+          //  rand.value = 1;
 
 
         var eG = this.d.curve.bp.mul(rand);
@@ -78,8 +78,16 @@ namespace DSTUSign
             var hr = r.value.ToHexadecimalString();
             var hs = s.value.ToHexadecimalString();
 
+            if(hr.Length < 64)
+            {
+                while (hr.Length < 64) hr = "0"+hr;
+            }
+            if (hs.Length < 64)
+            {
+                while (hs.Length < 64) hs = "0" + hs;
+            }
 
-
+            /*
             //восстанавливаем  возможные  0 после  truncate
 
             var ol = this.d.curve.order.getBitLength();
@@ -109,6 +117,8 @@ namespace DSTUSign
             }
 
             var tmp_r = tmp_rl.ToArray();
+            */
+            var tmp_r = Util.StringToByteArray(hr);
 
             var tmp_s = Util.StringToByteArray(hs);
 

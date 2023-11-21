@@ -16,7 +16,7 @@ namespace DSTUSign
     /// </summary>
     public class Signer
     {
- 
+
 
 
         /// <summary>
@@ -25,13 +25,11 @@ namespace DSTUSign
         /// <param name="message">Подписываемый локумент или  соообщение</param>
         /// <param name="key">ключ</param>
         /// <param name="cert">сертификат</param>
+       ///  <param name= "detached" > открепленная подпись</param>
         /// <returns></returns>
-        public static byte[] sign(byte[] message, Priv key, Cert cert)
+        public static byte[] sign(byte[] message, Priv key, Cert cert )
         {
-
-
-          
-
+ 
             var msghash = Hash.hash(message);
 
             var serthash = cert.getHash();
@@ -143,6 +141,8 @@ namespace DSTUSign
             asnWriter.PushSequence( );
 
             asnWriter.WriteObjectIdentifier("1.2.840.113549.1.7.1");
+      
+            
             asnWriter.PushSequence(context);
             
             asnWriter.WriteOctetString(message);
