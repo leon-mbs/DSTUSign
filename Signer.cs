@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Formats.Asn1;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices.ComTypes;
+using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -27,14 +29,14 @@ namespace DSTUSign
         /// <param name="cert">сертификат</param>
        ///  <param name= "detached" > открепленная подпись</param>
         /// <returns></returns>
-        public static byte[] sign(byte[] message, Priv key, Cert cert )
+        public static   byte[] sign(byte[] message, Priv key, Cert cert )
         {
  
             var msghash = Hash.hash(message);
 
             var serthash = cert.getHash();
 
-
+      
             var context = new Asn1Tag(TagClass.ContextSpecific, 0);
             var context4 = new Asn1Tag(TagClass.ContextSpecific, 4);
 
@@ -295,6 +297,44 @@ namespace DSTUSign
             return b;
         }
 
+
+        private static async Task<AsnReader> getTimestamp(string link,byte[] hash)
+        {
+
+
+            var asnWriter = new AsnWriter(AsnEncodingRules.DER);
+            asnWriter.PushSequence();
+            asnWriter.WriteInteger(1);
+            asnWriter.PushSequence();
+            asnWriter.PushSequence();
+            asnWriter.WriteObjectIdentifier("1.2.804.2.1.1.1.1.2.1");
+            asnWriter.PopSequence();
+            asnWriter.WriteOctetString(hash);
+            asnWriter.PopSequence();
+            asnWriter.PopSequence();
+            var der = asnWriter.Encode();
+
+
+            var client = new HttpClient();
+
+
+            var content =  new ByteArrayContent(der);
+            var stream = await client.PostAsync(link,content);
+
+            byte[] resu = await stream.Content.ReadAsByteArrayAsync();
+
+            var r = new AsnReader(new ReadOnlyMemory<byte>(resu), AsnEncodingRules.DER);
+            var ret = r.ReadSequence();
+
+            int status = (int)ret.ReadSequence().ReadInteger();
+            if(status != 0)
+            {
+                throw new Exception("TSP not allowed");
+            }
+
+
+            return ret.ReadSequence();
+        }
     }
 }
 

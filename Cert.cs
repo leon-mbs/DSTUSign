@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Formats.Asn1;
+using System.Buffers;
 
 namespace DSTUSign
 {
@@ -41,6 +42,12 @@ namespace DSTUSign
         public string keyid { get; }
 
         
+        public  bool isKeyUsage { get; }
+        
+        /// <summary>
+        ////адрес  TSP сервера
+        /// </summary>
+        public string tsplinc { get; }
 
         public Cert(byte[] raw)
         {
@@ -156,7 +163,38 @@ namespace DSTUSign
 
                     this.keyid = hex.ToString();
 
-                    break;
+                    continue;
+                }
+                if (id == "2.5.29.15")
+                {
+                    item.ReadBoolean();
+                    var ba = item.ReadOctetString();
+
+
+                    if (ba[3] == 192)
+                    {
+                        this.isKeyUsage = true;
+                    }
+
+                    continue;
+                }
+                if (id == "1.3.6.1.5.5.7.1.11")
+                {
+                    var ba = item.ReadOctetString();
+                    var l = new AsnReader(new ReadOnlyMemory<byte>(ba), AsnEncodingRules.DER);
+
+                    var sq = l.ReadSequence().ReadSequence();
+                    
+                    
+                    string idl = sq.ReadObjectIdentifier();
+                    if (idl == "1.3.6.1.5.5.7.48.3")
+                    {
+
+                        context = new Asn1Tag(TagClass.ContextSpecific, 6);
+                        var dddd = sq.ReadOctetString(context);
+                       this.tsplinc= Encoding.ASCII.GetString(dddd).Trim();
+                    }
+                    continue;
                 }
 
             }
@@ -180,6 +218,8 @@ namespace DSTUSign
             return h.finish();
 
         }
+
+      
 
     }
 

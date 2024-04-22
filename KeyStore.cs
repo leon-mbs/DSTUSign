@@ -318,7 +318,8 @@ namespace DSTUSign
             foreach (var key in  this.keys ){
                 var pubk = key.pub();
                 foreach ( var cert in  this.certs ){
-              
+                    if (!cert.isKeyUsage) continue;
+                    
                     var cpub = cert.pub();
                     if (pubk.q.isequal(cpub.q)) {
 
