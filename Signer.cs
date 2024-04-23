@@ -5,6 +5,7 @@ using System.Data;
 using System.Formats.Asn1;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Remoting.Contexts;
@@ -27,9 +28,9 @@ namespace DSTUSign
         /// <param name="message">Подписываемый локумент или  соообщение</param>
         /// <param name="key">ключ</param>
         /// <param name="cert">сертификат</param>
-       ///  <param name= "detached" > открепленная подпись</param>
+        ///  <param name= "detached" > открепленная подпись</param>
         /// <returns></returns>
-        public static   byte[] sign(byte[] message, Priv key, Cert cert )
+        public static byte[] sign(byte[] message, Priv key, Cert cert, bool detached= false)
         {
  
             var msghash = Hash.hash(message);
@@ -38,6 +39,7 @@ namespace DSTUSign
 
       
             var context = new Asn1Tag(TagClass.ContextSpecific, 0);
+            var context1 = new Asn1Tag(TagClass.ContextSpecific, 1);
             var context4 = new Asn1Tag(TagClass.ContextSpecific, 4);
 
 
@@ -117,8 +119,7 @@ namespace DSTUSign
             var attrset = Util.CopyArray(attrseq);
             attrset[0] = 49;
 
-       
-
+            
             var attrhash =  Hash.hash(attrset);
           
             var sign =  key.sign(attrhash);
@@ -143,14 +144,15 @@ namespace DSTUSign
             asnWriter.PushSequence( );
 
             asnWriter.WriteObjectIdentifier("1.2.840.113549.1.7.1");
-      
-            
-            asnWriter.PushSequence(context);
-            
-            asnWriter.WriteOctetString(message);
-            
-            asnWriter.PopSequence(context);
-     
+
+            if (!detached)
+            {
+                asnWriter.PushSequence(context);
+
+                asnWriter.WriteOctetString(message);
+
+                asnWriter.PopSequence(context);
+            }
  
             asnWriter.PopSequence();
 
@@ -182,9 +184,29 @@ namespace DSTUSign
             asnWriter.PushSequence(); 
             asnWriter.WriteObjectIdentifier("1.2.804.2.1.1.1.1.3.1.1");
             asnWriter.PopSequence();
-            asnWriter.WriteOctetString(sign);  
+            asnWriter.WriteOctetString(sign);
+
+
+            if (false) ////  todo  timestamp
+            {
+                var tsp = getTimestamp(cert.tsplinc, msghash).GetAwaiter().GetResult();
+                var t = tsp.PeekEncodedValue();
+                asnWriter.PushSequence(context1);
+                asnWriter.PushSequence();
+                asnWriter.WriteObjectIdentifier("1.2.840.113549.1.9.16.2.14");
+                asnWriter.PushSetOf();
+                asnWriter.WriteEncodedValue(t.Span); 
+                asnWriter.PopSetOf();
+                asnWriter.PopSequence();
+                asnWriter.PopSequence(context1);
+
+            }
+
             asnWriter.PopSequence();
-            asnWriter.PopSetOf();
+
+
+
+                asnWriter.PopSetOf();
             asnWriter.PopSequence();
           
             asnWriter.PopSequence(context);
@@ -297,7 +319,13 @@ namespace DSTUSign
             return b;
         }
 
-
+        /// <summary>
+         ///получение  метки  времени с  TSP сервера
+        /// </summary>
+        /// <param name="link"></param>
+        /// <param name="hash"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         private static async Task<AsnReader> getTimestamp(string link,byte[] hash)
         {
 
@@ -319,6 +347,8 @@ namespace DSTUSign
 
 
             var content =  new ByteArrayContent(der);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/tsp-request");
+
             var stream = await client.PostAsync(link,content);
 
             byte[] resu = await stream.Content.ReadAsByteArrayAsync();
@@ -333,7 +363,7 @@ namespace DSTUSign
             }
 
 
-            return ret.ReadSequence();
+            return ret;
         }
     }
 }
